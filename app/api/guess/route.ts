@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // DeepSeek API配置
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-// 注意：在实际部署时，应该使用环境变量来存储API密钥
+const DEEPSEEK_API_URL = process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com/v1/chat/completions';
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
+const DEEPSEEK_DEFAULT_MODEL = process.env.DEEPSEEK_DEFAULT_MODEL || 'deepseek-chat';
 
 export async function POST(request: NextRequest) {
   try {
-    const { image } = await request.json();
+    const { image, model = DEEPSEEK_DEFAULT_MODEL } = await request.json();
 
     if (!image) {
       return NextResponse.json(
@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
       },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
+        body: JSON.stringify({
+          model: model,
         messages: [
           {
             role: 'system',
@@ -134,6 +134,11 @@ export async function GET() {
     message: 'AI你画我猜API已就绪',
     status: '运行中',
     mockMode: !process.env.DEEPSEEK_API_KEY,
-    instructions: '发送POST请求，包含{ image: "base64图像数据" }'
+    instructions: '发送POST请求，包含{ image: "base64图像数据", model: "模型名称(可选)" }',
+    config: {
+      apiUrl: DEEPSEEK_API_URL,
+      defaultModel: DEEPSEEK_DEFAULT_MODEL,
+      hasApiKey: !!DEEPSEEK_API_KEY
+    }
   });
 }
